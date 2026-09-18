@@ -18,6 +18,7 @@ import struct
 import subprocess
 import sys
 import zlib
+import zipfile
 
 import pytest
 
@@ -197,6 +198,23 @@ def three_box_model(project):
 
 
 class TestProjectLifecycle:
+    def test_new_project_opens_a_diagram_tab_in_the_gui(self, tmp_dir):
+        path = os.path.join(tmp_dir, "gui.rsf")
+        project_mod.new_project(path, model_name="GUI model", overwrite=True)
+        with zipfile.ZipFile(path) as archive:
+            session = archive.read("user/gui/session.binary")
+        assert session.startswith(b"\xac\xed\x00\x05")  # Java serialization
+        assert b"OpenIDEF0Diagram" in session
+        assert b"GUI model" in session
+
+        # Editing and saving must retain the tab that the GUI will restore.
+        session_mod.reset_session()
+        project_mod.open_project(path)
+        function_mod.add_function("Step one")
+        project_mod.save_project()
+        with zipfile.ZipFile(path) as archive:
+            assert archive.read("user/gui/session.binary") == session
+
     def test_new_project_writes_a_real_rsf(self, tmp_dir):
         path = os.path.join(tmp_dir, "new.rsf")
         result = project_mod.new_project(path, model_name="Order flow", author="QA",

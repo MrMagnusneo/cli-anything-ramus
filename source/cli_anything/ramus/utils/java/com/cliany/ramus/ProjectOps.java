@@ -1,6 +1,7 @@
 package com.cliany.ramus;
 
 import java.io.File;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,9 @@ import com.ramussoft.core.attribute.simple.HierarchicalPersistent;
 import com.ramussoft.core.attribute.standard.AutochangePlugin;
 import com.ramussoft.core.attribute.standard.StandardAttributesPlugin;
 import com.ramussoft.idef0.IDEF0Plugin;
+import com.ramussoft.idef0.IDEF0ViewPlugin;
+import com.ramussoft.idef0.OpenDiagram;
+import com.ramussoft.gui.common.event.ActionEvent;
 import com.ramussoft.pb.DataPlugin;
 import com.ramussoft.pb.Function;
 import com.ramussoft.pb.Row;
@@ -129,6 +133,14 @@ final class ProjectOps {
             }
         });
 
+        // Runner restores diagram tabs from this stream; without it a new
+        // CLI project opens as a blank workspace in the desktop application.
+        List<ActionEvent> tabs = new ArrayList<ActionEvent>();
+        tabs.add(new ActionEvent(IDEF0ViewPlugin.OPEN_DIAGRAM, new OpenDiagram(model, -1L)));
+        try (ObjectOutputStream out = new ObjectOutputStream(
+                engine.getOutputStream("/user/gui/session.binary"))) {
+            out.writeObject(tabs);
+        }
         ops.saveTo(target);
         Map<String, Object> result = info(ops);
         result.put("created", Boolean.TRUE);

@@ -291,6 +291,18 @@ nothing changed reuses the bundle (`"_cached": true`); `--force` re-renders.
 | `emf` | **Needs a display** — see limitations |
 | `idl` | IDEF0 interchange — see limitations |
 
+## CLI limitations to account for
+
+- `project new` saves a default diagram tab so the project opens visibly in
+  the desktop application. `project validate` checks model data, not GUI state.
+- `function decompose` creates child boxes; it does **not** wire inherited
+  boundary arrows. `arrow add` creates a new stream even if its name matches
+  an existing arrow. Matching labels alone do not establish IDEF0 balance.
+- CLI node selectors are not always the same as the node numbers painted by
+  Ramus, especially for a context diagram. Prefer numeric IDs from listings.
+- The current PDF font mapper may omit Cyrillic text. A successful magic-byte
+  check does not verify text rendering; inspect the PDF or use PNG/SVG.
+
 ## Known Ramus limitations
 
 These are defects and constraints in Ramus itself, reachable from the GUI too.
